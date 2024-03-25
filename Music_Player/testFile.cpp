@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "GUI.hpp"
 //#include <chrono>
 //#include <regex>
 
@@ -27,18 +28,60 @@ struct Music* newNode()
 Music* root = NULL;
 string filename = "music_data.txt";
 
+
+void saveMusicToFile(Music* node, ofstream& file) {
+    if (node == NULL) {
+        return;
+    }
+    
+    saveMusicToFile(node->left, file);
+        file<<"***music "<<node->key<<"***"<<endl;
+        file<<"key   :"<<node->key <<endl;
+        file<<"name  :"<<node->artistName<<endl;
+        file<<"music :"<<node->musicName<<endl;
+        file<<"date  :"<<node->dateAdded<<endl;
+        file<<"Rate  :"<<node->rate <<endl;
+        file<<"==========================================="<<endl;
+    saveMusicToFile(node->right, file);
+}
+
+void saveToFile(Music* node) {
+    ofstream file(filename,ios::app);
+    if (file.is_open()) {
+        saveMusicToFile(node, file);
+        file.close();
+        cout << "Music library saved to file." <<endl;
+    } else {
+        cout << "Unable to open file for saving music library." << std::endl;
+    }
+}
+void buildBinaryTreeFromFile(TreeNode*& root, const std::string& filename) {
+    std::ifstream inputFile(filename);
+    if (!inputFile.is_open()) {
+        cout << "Error opening file." << std::endl;
+        return;
+    }
+
+    int value;
+    while (inputFile >> value) {
+        insert(root, value);
+    }
+
+    inputFile.close();
+}
+
 void proceedOption() {
     char choice;
     cout << "Do you want to continue? (Y/N): ";
     cin >> choice;
     cin.ignore();
 
-//    if (choice == 'Y' || choice == 'y') {
-//        displayMenu();
-//    } else {
-//        cout << "Exiting program..." << endl;
-//        saveToFile(root);
-//    }
+    if (choice == 'Y' || choice == 'y') {
+       displayMenu();
+    } else {
+       cout << "Exiting program..." << endl;
+       saveToFile(root);
+   }
 }
  
 
@@ -602,7 +645,7 @@ void displayMenu() {
         	 displaySearchMenu();
         	 break;
         case 0: 
-//            saveToFile(root);
+           saveToFile(root);
               exitProgram();
             break;
         
@@ -614,6 +657,10 @@ void displayMenu() {
 }
 int main()
 { 
+    GUI ui;
+    ui.someFunction();
+    printf("Press any key to continue...");
+    getchar();
     displayMenu();  
 	  
     return 0;
