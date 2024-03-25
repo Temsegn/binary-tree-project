@@ -29,6 +29,9 @@ Music* root = NULL;
 string filename = "music_data.txt";
 
 
+void insert();
+void displayMenu();
+
 void saveMusicToFile(Music* node, ofstream& file) {
     if (node == NULL) {
         return;
@@ -55,20 +58,20 @@ void saveToFile(Music* node) {
         cout << "Unable to open file for saving music library." << std::endl;
     }
 }
-void buildBinaryTreeFromFile(TreeNode*& root, const std::string& filename) {
-    std::ifstream inputFile(filename);
-    if (!inputFile.is_open()) {
-        cout << "Error opening file." << std::endl;
-        return;
-    }
+// void buildBinaryTreeFromFile(Music*root, string& filename) {
+//     ifstream inputFile(filename);
+//     if (!inputFile.is_open()) {
+//         cout << "Error opening file." << std::endl;
+//         return;
+//     }
 
-    int value;
-    while (inputFile >> value) {
-        insert(root, value);
-    }
+//     int value;
+//     while (inputFile >> value) {
+//         insertMusic();
+//     }
 
-    inputFile.close();
-}
+//     inputFile.close();
+// }
 
 void proceedOption() {
     char choice;
@@ -445,7 +448,7 @@ void searchByRate(int rate) {
 }
 
 
-void preorderTraversal(Node* node) {
+void preorderTraversal(Music* node) {
     if (node != NULL) {
         cout << displayDetail(node) << endl;
         preorderTraversal(node->left);
@@ -453,7 +456,7 @@ void preorderTraversal(Node* node) {
     }
 }
 
-void inorderTraversal(Node* node) {
+void inorderTraversal(Music* node) {
     if (node != NULL) {
         inorderTraversal(node->left);
         cout << displayDetail(node) << endl;
@@ -462,7 +465,7 @@ void inorderTraversal(Node* node) {
 }
 
 
-void postorderTraversal(Node* node) {
+void postorderTraversal(Music* node) {
     if (node != NULL) {
         postorderTraversal(node->left);
         postorderTraversal(node->right);
@@ -599,7 +602,11 @@ void displayMenus(){
 	   cout<<  "2. Display Top Music"<<endl;
        cout << "3. Display Low Music" << endl;
        cout << "4. Display All Music" << endl;
-       cout<<  "5. MainMenu "<<endl;
+       cout<<  "5. preorder "<<endl;
+       cout<<  "6. inorder "<<endl;
+       cout<<  "7. postorder "<<endl;
+       cout<<  "8. level order "<<endl;
+       cout<<  "9. MainMenu "<<endl;
        cout<<  "0. Exit"<<endl;
 }
 void displayMenu() {
