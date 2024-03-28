@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include "GUI.hpp"
+#include "validation.hpp"
 //#include <chrono>
 //#include <regex>
 
@@ -49,7 +49,9 @@ void saveMusicToFile(Music* node, ofstream& file) {
 }
 
 void saveToFile(Music* node) {
-    ofstream file(filename,ios::app);
+	
+    ofstream file;
+    file.open("music_data.txt",ios::app);
     if (file.is_open()) {
         saveMusicToFile(node, file);
         file.close();
@@ -75,14 +77,14 @@ void saveToFile(Music* node) {
 
 void proceedOption() {
     char choice;
-    cout << "Do you want to continue? (Y/N): ";
+    cout << "Do you want to continue? (Y/N) :  ";
     cin >> choice;
     cin.ignore();
 
     if (choice == 'Y' || choice == 'y') {
        displayMenu();
     } else {
-       cout << "Exiting program..." << endl;
+       cout << "\n\n Exiting program..." << endl;
        saveToFile(root);
    }
 }
@@ -91,22 +93,23 @@ void proceedOption() {
 void insertMusic(Music* music) {
 	bool isFound=false;
 	Music* current=root;
-    Music* newNod = newNode();
+	Music* temp=current;
+
     
-     while (true) {
-     	if (current->key == music->key)
+     while (temp!=NULL) {
+      	if (temp->key == music->key)
      	    {
      	    	cout<<"you entered the used key , exited"<<endl;
      	    	return;
 			 }
-        else if (music->key < current->key) 
-		    current = current->left;
+        else if (music->key < temp->key) 
+		    temp = temp->left;
         else    
-		    current = current->right;
+		    temp = temp->right;
     }
 
     if (root == NULL) {
-        root = newNod;
+        root = music;
     } else {
         Music* current = root;
         Music* parent = NULL;
@@ -117,13 +120,13 @@ void insertMusic(Music* music) {
             if (music->key < current->key) {
                 current = current->left;
                 if (current == NULL) {
-                    parent->left = newNod;
+                    parent->left = music;
                     break;
                 }
             } else {
                 current = current->right;
                 if (current == NULL) {
-                    parent->right = newNod;
+                    parent->right = music;
                     break;
                 }
             }
@@ -312,11 +315,11 @@ void deleteAll(){
 void displayDetail(Music* music)
 {               
                 cout<<"********* MUSIC ************"<<endl<<endl;
-                cout << "Key: " << music->key << endl;
-                cout << "Music Name: " << music->musicName << endl;
+                cout << "Key        : " << music->key << endl;
+                cout << "Music Name : " << music->musicName << endl;
                 cout << "Artist Name: " << music->artistName << endl;
-                cout << "Date Added: " << music->dateAdded << endl;
-                cout << "Rate: " << music->rate << endl;
+                cout << "Date Added : " << music->dateAdded << endl;
+                cout << "Rate       : " << music->rate << endl;
                 cout<<"********************************"<<endl<<endl;
 
 	
@@ -450,7 +453,7 @@ void searchByRate(int rate) {
 
 void preorderTraversal(Music* node) {
     if (node != NULL) {
-        cout << displayDetail(node) << endl;
+        displayDetail(node);
         preorderTraversal(node->left);
         preorderTraversal(node->right);
     }
@@ -459,7 +462,7 @@ void preorderTraversal(Music* node) {
 void inorderTraversal(Music* node) {
     if (node != NULL) {
         inorderTraversal(node->left);
-        cout << displayDetail(node) << endl;
+        displayDetail(node);
         inorderTraversal(node->right);
     }
 }
@@ -469,7 +472,7 @@ void postorderTraversal(Music* node) {
     if (node != NULL) {
         postorderTraversal(node->left);
         postorderTraversal(node->right);
-        cout << displayDetail(node) << endl;
+        displayDetail(node);
     }
 }
 
@@ -489,23 +492,27 @@ void displaySearchMenu()
     cout<<  "6. MainMenu "<<endl;
     cout<<  "0. Exit"<<endl;
     int choice;
+    cout<<"enter your choice :";
     cin>>choice;
     switch(choice){
     	  case 1: 
-            int key;
+           {
+           	 int key;
             cout << "Enter the key to search: ";
             cin >> key;
 
-           Music* music = searchByKey(key);
-            if (music != NULL) 
-                displayDetail(music);
+           Music* musics = searchByKey(key);
+            if (musics != NULL) 
+                displayDetail(musics);
            else 
                 cout << "Music with key " << key << " not found." << endl;
-
             proceedOption();
             break;
+            
+		   }
          case 2: 
-            string musicName;
+           {
+           	 string musicName;
             cout << "Enter the music name to search: ";
             getline(cin, musicName);
 
@@ -519,16 +526,20 @@ void displaySearchMenu()
             proceedOption();
             break;
         
+		   }
         case 3: 
-            string artistName;
+           {
+           	 string artistName;
             cout << "Enter the artist name to search: ";
             getline(cin, artistName);
 
             searchByArtistName(artistName);
             proceedOption();
             break;
+		   }
          case 4: 
-            string dateAdded;
+           {
+           	 string dateAdded;
             cout << "Enter the date added to search (YYYY-MM-DD): ";
             getline(cin, dateAdded);
 
@@ -536,12 +547,11 @@ void displaySearchMenu()
              
             proceedOption();
             break;
+		   }
         case 5: 
-            int rate;
-            cout << "Enter the rate to search: ";
-            cin >> rate;             
-            proceedOption();
-            break;
+           {
+           	
+		   }
         case 6:
        	 displayMenu();
        	 break;
@@ -555,7 +565,7 @@ void displaySearchMenu()
 	}
     
 }
-void displayDeleteMenu()
+void deleteDisplayMenu()
 {
 	   cout << "1. Delete Music" << endl;
        cout << "2. Delete Min key Music" << endl;
@@ -582,7 +592,7 @@ void displayDeleteMenu()
             proceedOption();
             break;
          case 4:
-         		deleteAll(root);
+         		deleteAll( );
         		break;
  		case 5:
 			 	displayMenu();
@@ -608,42 +618,100 @@ void displayMenus(){
        cout<<  "8. level order "<<endl;
        cout<<  "9. MainMenu "<<endl;
        cout<<  "0. Exit"<<endl;
-}
-void displayMenu() {
-    cout << "------ Music Library ------" << endl;
-    cout << "1. Add Music" << endl;
-    cout << "2. Delete Music" << endl;
-    cout << "3. Display Music" << endl;
-    cout << "4. Search Music" << endl;
-    cout << "0. Exit" << endl;
-    cout << "---------------------------" << endl;
-    int choice;
+       int choice;
     cout << "Enter your choice: ";
     cin >> choice;
+    cin.ignore();
+    switch(choice){
+    	case 1:
+    		display();
+    		proceedOption();
+
+    		break;
+    	case 2:
+    		displayMaximum();
+    		proceedOption();
+    		break;
+		case 3:
+			displayMinimum();
+			proceedOption();
+
+    		break;
+		case 4:
+			display();
+			proceedOption();
+
+    		break;
+		case 5:
+			postorderTraversal(root);
+			    		proceedOption();
+
+    		break;
+		case 6:
+			inorderTraversal(root);
+			    		proceedOption();
+
+    		break;
+		case 7:
+			    		proceedOption();
+
+		cout<<"post order"<<endl;
+    		break;
+		case 8:
+			    		proceedOption();
+
+			cout<<"level order"<<endl;
+    		break;
+		case 9:
+			    		proceedOption();
+
+			displayMenu();
+    		break;
+		case 0:
+			exitProgram();
+    		break;
+    	 default:
+    	 	cout<<"invalid "<<endl;
+    		break;
+	}
+}
+void displayMenu() {
+    cout << "                      ------ Music Library ------\n\n" << endl;
+    cout << "                         1. Add Music" << endl;
+    cout << "                         2. Delete Music" << endl;
+    cout << "                         3. Display Music" << endl;
+    cout << "                         4. Search Music" << endl;
+    cout << "                         0. Exit\n" << endl;
+     int choice;
+    cout << "                   Enter your choice : ";
+    cin >> choice;
     cin.ignore();  // Ignore remaining newline character
-    
+    system("clr");
     switch (choice) {
         case 1 : 
-        	Music* newMusic=newNode();
+        {
+        		Music* newMusic=newNode();
         	cout<<endl<<"***************************"<<endl<<endl;
-            cout << "Enter the key: ";
+            cout << "Enter the key                   : ";
             cin >> newMusic->key;
             cin.ignore();
-            cout << "Enter the music name: ";
+            cout << "Enter the music name            : ";
             getline(cin, newMusic->musicName);
-            cout << "Enter the artist name: ";
+            cout << "Enter the artist name           : ";
             getline(cin, newMusic->musicName);
-            cout << "Enter the date added (YYYY-MM-DD): ";
+            cout << "Enter the date (YYYY-MM-DD)     : ";
             getline(cin, newMusic->artistName);
-            cout << "Enter the rate: ";
+            cout << "Enter the rate                  : ";
             cin >>newMusic->rate;
             cin.ignore();
             cout<<endl<<endl<<endl;
              insertMusic(newMusic);
             proceedOption();
             break;
+		}
         case 2 :
-        	displayDeleteMenu();
+        	//displayDeleteMenu();
+        	cout<<"display menu"<<endl;
         	break;
         case 3:
         	 displayMenus();
@@ -666,10 +734,10 @@ int main()
 { 
     GUI ui;
     ui.someFunction();
-    printf("Press any key to continue...");
+    printf("\n\n\nPress any key to continue...\n\n\n");
     getchar();
     displayMenu();  
-	  
+	cout<<"\n\n\n\n\n";  
     return 0;
 }
  
