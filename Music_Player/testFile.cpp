@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include<string>
+#include<sstream>
 #include "GUI.hpp"
 #include "validation.hpp"
 //#include <chrono>
@@ -8,12 +10,14 @@
 //#include <ctime>
 using namespace std;
 
+Validator validate;
+
 struct Music {
     int key;
     string musicName;
     string artistName;
     string dateAdded;
-    int rate; 
+    int rate;
     Music *left, *right;
 };
 
@@ -28,28 +32,22 @@ struct Music* newNode()
 Music* root = NULL;
 string filename = "music_data.txt";
 
-
-void insert();
+void insertMusic(Music* node);
 void displayMenu();
 
 void saveMusicToFile(Music* node, ofstream& file) {
     if (node == NULL) {
         return;
     }
-    
-    saveMusicToFile(node->left, file);
-        file<<"***music "<<node->key<<"***"<<endl;
-        file<<"key   :"<<node->key <<endl;
-        file<<"name  :"<<node->artistName<<endl;
-        file<<"music :"<<node->musicName<<endl;
-        file<<"date  :"<<node->dateAdded<<endl;
-        file<<"Rate  :"<<node->rate <<endl;
-        file<<"==========================================="<<endl;
-    saveMusicToFile(node->right, file);
+
+    saveMusicToFile(node->left, file);        
+        file<<node->key<<","<<node->artistName<<","<<node->musicName<<","<<node->dateAdded<<","<<node->rate <<endl;
+	saveMusicToFile(node->right, file);
 }
 
+
 void saveToFile(Music* node) {
-	
+
     ofstream file;
     file.open("music_data.txt",ios::app);
     if (file.is_open()) {
@@ -57,54 +55,90 @@ void saveToFile(Music* node) {
         file.close();
         cout << "Music library saved to file." <<endl;
     } else {
-        cout << "Unable to open file for saving music library." << std::endl;
-    }
+        cout << "Unable to open file for saving music library." << endl;
+    } 
+    
 }
-// void buildBinaryTreeFromFile(Music*root, string& filename) {
-//     ifstream inputFile(filename);
-//     if (!inputFile.is_open()) {
-//         cout << "Error opening file." << std::endl;
-//         return;
-//     }
+ void parseFileRecursive(fstream& file, Music*& root) {
+    string line;
 
-//     int value;
-//     while (inputFile >> value) {
-//         insertMusic();
-//     }
+    if (!file.is_open()) {
+        cerr << "Failed to open the file." << endl;
+        return;
+    }
+    Music* newm=newNode();
 
-//     inputFile.close();
-// }
+    while (getline(file,line)) {
+        
+        stringstream ss(line);
+        string item;
+        int key;
+        string artistName;
+        string musicName;
+        string dateAdded;
+        int rate;
+
+        // Parse each line by comma-separated values
+        if (getline(ss, item, ','))
+            key = stoi(item);
+        
+        if (getline(ss, item, ','))
+            artistName = item;
+
+        if (getline(ss, item, ','))
+            musicName = item; 
+
+        if (getline(ss, item, ','))
+            dateAdded = item;
+
+        if (getline(ss, item, ','))
+            rate = stoi(item);
+            
+       newm->key=key;
+       newm->artistName=artistName;
+       newm->musicName=musicName;
+       newm->dateAdded=dateAdded;
+       newm->rate=rate;
+
+       insertMusic(newm);
+    }
+
+    // Close the file
+    file.close();
+}
+ 
 
 void proceedOption() {
     char choice;
     cout << "Do you want to continue? (Y/N) :  ";
     cin >> choice;
     cin.ignore();
+    system("cls");
 
     if (choice == 'Y' || choice == 'y') {
        displayMenu();
     } else {
        cout << "\n\n Exiting program..." << endl;
        saveToFile(root);
-   }
+   } 
 }
- 
+
 
 void insertMusic(Music* music) {
 	bool isFound=false;
 	Music* current=root;
 	Music* temp=current;
 
-    
+
      while (temp!=NULL) {
       	if (temp->key == music->key)
      	    {
      	    	cout<<"you entered the used key , exited"<<endl;
      	    	return;
 			 }
-        else if (music->key < temp->key) 
+        else if (music->key < temp->key)
 		    temp = temp->left;
-        else    
+        else
 		    temp = temp->right;
     }
 
@@ -133,7 +167,7 @@ void insertMusic(Music* music) {
         }
     }
 
-    cout << "Music added successfully." << endl;
+    cout << "Music added successfully." << endl; 
 }
 
 Music* getSuccessor(Music* node) {
@@ -229,11 +263,11 @@ void deleteMusic(int key) {
 }
 
 void deleteMusic() {
-	
+
     if (root == NULL) {
         cout << "Music library is empty." << endl;
         return;
-    } 
+    }
 
          Music* temp = root;
         if (root->left == NULL && root->right == NULL) {
@@ -252,8 +286,8 @@ void deleteMusic() {
         }
         delete temp;
         cout << " The root node deleted successfully." << endl;
-        
-        return;     
+
+        return;
 }
 
 void deleteMinimum() {
@@ -308,21 +342,23 @@ void deleteAll(){
 	 Music* temp=root;
 	 root->left=NULL;
 	 root->right=NULL;
-	 root=NULL; 
+	 root=NULL;
 	 delete temp;
 }
 
 void displayDetail(Music* music)
-{               
+{
                 cout<<"********* MUSIC ************"<<endl<<endl;
+                
                 cout << "Key        : " << music->key << endl;
                 cout << "Music Name : " << music->musicName << endl;
                 cout << "Artist Name: " << music->artistName << endl;
                 cout << "Date Added : " << music->dateAdded << endl;
                 cout << "Rate       : " << music->rate << endl;
+                
                 cout<<"********************************"<<endl<<endl;
 
-	
+
 }
 
 void display(){}
@@ -340,7 +376,7 @@ void displayMinimum() {
     }
             displayDetail(music);
 
-               
+
     }
 
 
@@ -355,7 +391,7 @@ void displayMaximum() {
     while (music->right != NULL) {
          music = music->right;
     }
-    
+
         displayDetail(music);
     }
 
@@ -385,9 +421,9 @@ Music* searchByMusicName(const string& musicName) {
         } else if (musicName < current->musicName) {
             current = current->left;
         } else {
-            current = current->right; 
+            current = current->right;
         }
-    }
+    } 
 
     return NULL;
 }
@@ -426,7 +462,7 @@ void searchByDateAdded(const string& dateAdded) {
             current = current->right;
         }
     }
-  
+
    if(!found)
        cout << "Music by artist \"" << dateAdded << "\" not found." << endl;
 
@@ -495,22 +531,22 @@ void displaySearchMenu()
     cout<<"enter your choice :";
     cin>>choice;
     switch(choice){
-    	  case 1: 
+    	  case 1:
            {
            	 int key;
             cout << "Enter the key to search: ";
             cin >> key;
 
            Music* musics = searchByKey(key);
-            if (musics != NULL) 
+            if (musics != NULL)
                 displayDetail(musics);
-           else 
+           else
                 cout << "Music with key " << key << " not found." << endl;
             proceedOption();
             break;
-            
+
 		   }
-         case 2: 
+         case 2:
            {
            	 string musicName;
             cout << "Enter the music name to search: ";
@@ -525,9 +561,9 @@ void displaySearchMenu()
 
             proceedOption();
             break;
-        
+
 		   }
-        case 3: 
+        case 3:
            {
            	 string artistName;
             cout << "Enter the artist name to search: ";
@@ -537,20 +573,20 @@ void displaySearchMenu()
             proceedOption();
             break;
 		   }
-         case 4: 
+         case 4:
            {
            	 string dateAdded;
             cout << "Enter the date added to search (YYYY-MM-DD): ";
             getline(cin, dateAdded);
 
            searchByDateAdded(dateAdded);
-             
+
             proceedOption();
             break;
 		   }
-        case 5: 
+        case 5:
            {
-           	
+
 		   }
         case 6:
        	 displayMenu();
@@ -563,7 +599,7 @@ void displaySearchMenu()
             displaySearchMenu();
             break;
 	}
-    
+
 }
 void deleteDisplayMenu()
 {
@@ -576,18 +612,18 @@ void deleteDisplayMenu()
        int choice;
        cin>>choice;
        switch(choice){
-       	  case 1: 
+       	  case 1:
             int key;
             cout << "Enter the key to delete: ";
             cin >> key;
             deleteMusic(key);
             proceedOption();
             break;
-        case 2: 
+        case 2:
             deleteMinimum();
             proceedOption();
             break;
-         case 3: 
+         case 3:
             deleteMaximum();
             proceedOption();
             break;
@@ -601,7 +637,7 @@ void deleteDisplayMenu()
 			exitProgram();
 			break;
 		default :
-			system("clr");
+			system("cls");
 			cout<<" wrong option , try again"<<endl;
             deleteDisplayMenu();
             break;
@@ -626,7 +662,6 @@ void displayMenus(){
     	case 1:
     		display();
     		proceedOption();
-
     		break;
     	case 2:
     		displayMaximum();
@@ -643,21 +678,24 @@ void displayMenus(){
 
     		break;
 		case 5:
-			postorderTraversal(root);
-			    		proceedOption();
-
-    		break;
-		case 6:
+		 cout << "Preorder Traversal: ";
+            preorderTraversal(root);
+            cout << endl;
+            proceedOption();
+            break;
+ 
+ 		case 6:
 			inorderTraversal(root);
 			    		proceedOption();
 
     		break;
 		case 7:
-			    		proceedOption();
-
-		cout<<"post order"<<endl;
-    		break;
-		case 8:
+			cout << "Postorder Traversal: ";
+            postorderTraversal(root);
+            cout << endl;
+            proceedOption();
+            break;
+ 		case 8:
 			    		proceedOption();
 
 			cout<<"level order"<<endl;
@@ -674,35 +712,106 @@ void displayMenus(){
     	 	cout<<"invalid "<<endl;
     		break;
 	}
+} 
+
+void addoption()
+{
+	 cout<<"1. from the local disk "<<endl;
+	 cout<<"2. from the Keyboard"<<endl;
+	 
 }
-void displayMenu() {
-    cout << "                      ------ Music Library ------\n\n" << endl;
+void displayMenu(){
+    cout<<"-----------Music player------------------------"<<endl;
     cout << "                         1. Add Music" << endl;
     cout << "                         2. Delete Music" << endl;
     cout << "                         3. Display Music" << endl;
     cout << "                         4. Search Music" << endl;
-    cout << "                         0. Exit\n" << endl;
-     int choice;
+    cout << "                         5. rotate root Music" << endl;
+    cout << "                         0. Exit\n\n\n" << endl;  
     cout << "                   Enter your choice : ";
+    int choice;
     cin >> choice;
     cin.ignore();  // Ignore remaining newline character
-    system("clr");
+    system("cls");
     switch (choice) {
-        case 1 : 
-        {
-        		Music* newMusic=newNode();
+        case 1 :
+        {  
+              addoption();
+               cin >> choice;
+               cin.ignore();  // Ignore remaining newline character
+               if(choice==1)
+                 { 
+                    // Open the file for reading
+                   fstream file("music_data.txt");
+                   if (!file.is_open()) {
+                   cerr << "Failed to open the file." << endl;
+                  return ;
+                 }
+
+        
+                parseFileRecursive(file,root);
+                proceedOption();
+                  break;                 	
+				 }
+               system("cls");
+            
+  
+    
+    	        
+	Music* newMusic=newNode();
         	cout<<endl<<"***************************"<<endl<<endl;
-            cout << "Enter the key                   : ";
+            cout << "Enter the key           : ";
             cin >> newMusic->key;
-            cin.ignore();
-            cout << "Enter the music name            : ";
+                        cin.ignore();
+
+            int k= newMusic->key;
+            string key= to_string(k);
+           if(!validate.isNumber(key))
+           {
+           	 cout<<"it is not number , should be integer"<<endl;
+           	 exit(0);
+		   }
+            cout << "Enter the music name    : ";
             getline(cin, newMusic->musicName);
-            cout << "Enter the artist name           : ";
-            getline(cin, newMusic->musicName);
-            cout << "Enter the date (YYYY-MM-DD)     : ";
+          if(!validate.hasNoNumber(newMusic->musicName))
+            {
+            	cout<<"the name is invalid , only letter allowed"<<endl;
+            	exitProgram();
+									}                        
+            cout << "Enter the artist name   : ";
             getline(cin, newMusic->artistName);
-            cout << "Enter the rate                  : ";
+             if(!validate.hasNoNumber(newMusic->artistName))
+            {
+            	cout<<"the name is invalid , only letter allowed"<<endl;
+            	exitProgram();
+									} 
+            cout << "Enter date (YYYY-MM-DD) : ";
+            getline(cin, newMusic->dateAdded);
+            
+            if(!validate.isValidDate(newMusic->dateAdded))
+            {
+            	cout<<"invalid date format"<<endl;
+                 exitProgram();
+ 			}
+            cout << "Enter the rate          : ";
             cin >>newMusic->rate;
+            int rate=newMusic->rate;
+            string stringNumber =to_string(rate);
+            
+            if(validate.isNumber(stringNumber))
+              { 
+                
+              	if(!validate.isValidRating(newMusic->rate))
+              	  {
+              	  	cout<<"invalid value , between 0 and 10"<<endl;
+              	  	exitProgram();
+					}
+			  }
+			  else
+			    {
+			    	cout<<"you have to enter a number , not character"<<endl;
+			    	exitProgram();
+				}
             cin.ignore();
             cout<<endl<<endl<<endl;
              insertMusic(newMusic);
@@ -710,7 +819,7 @@ void displayMenu() {
             break;
 		}
         case 2 :
-        	//displayDeleteMenu();
+        	deleteDisplayMenu();
         	cout<<"display menu"<<endl;
         	break;
         case 3:
@@ -719,50 +828,29 @@ void displayMenu() {
         case 4:
         	 displaySearchMenu();
         	 break;
-        case 0: 
+        case 0:
            saveToFile(root);
               exitProgram();
             break;
-        
-        default: 
+
+        default:
             cout << "Invalid choice. Please try again." << endl;
             proceedOption();
             break;
   }
 }
 int main()
-{ 
+{
     GUI ui;
     ui.someFunction();
     printf("\n\n\nPress any key to continue...\n\n\n");
     getchar();
-    displayMenu();  
-	cout<<"\n\n\n\n\n";  
+    system("cls");
+    displayMenu();
+	cout<<"\n\n\n\n\n";
     return 0;
-}
- 
-//bool isValidDate(const string& dateStr) {
-//	
-//    regex dateRegex(R"(^\d{4}-\d{2}-\d{2}$)");
-//
-//    if (!regex_match(dateStr, dateRegex)) {
-//        return false;
-//    }
-//
-//    int year = stoi(dateStr.substr(0, 4));
-//    int month = stoi(dateStr.substr(5, 2));
-//    int day = stoi(dateStr.substr(8, 2));
-//
-//    try {
-//        year_month_day date{ year, month, day };
-//        return date.ok();
-//    } catch (const exception&) {
-//        return false;
-//    }
-//}
-//bool isNumber()
-//{ 
-//    
-//	return true;
-//}
+}                                            
 
+                                            
+                    
+ 
